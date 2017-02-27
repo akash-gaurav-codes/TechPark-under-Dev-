@@ -21,7 +21,6 @@ function genRandom(min, max){
 
 
 
-
 //Populate companies
 function company(name){
 	this.name = name;
@@ -44,8 +43,8 @@ for (var cmp = numOfCompanies-1; cmp > 0; cmp--) {
 
 
 //create a prototype of unit
-function unit(name, owner, floor, tower) {
-			this.name = name;
+function unit(number, owner, floor, tower) {
+			this.number = number;
 			this.owner = owner;
 			this.floor = floor;
 			this.tower = tower;
@@ -82,3 +81,127 @@ for (var tower = 4; tower > 0; tower--) {
 	}
 }
 
+
+
+
+//Connect to Mongodb
+var MongoClient = require('mongodb').MongoClient,
+    assert = require('assert');
+
+var url = 'mongodb://127.0.0.1:27017/TechPark';
+
+
+MongoClient.connect(url, function(err, db){
+	if(err!=null){
+		console.error(err);
+		return;
+	}
+
+
+	var unitColl = db.collection('Unit');
+	var logColl = db.collection('VisitorLog');
+
+
+	//clear old collections
+	var removeDocuments = function(db, callback) {
+	  unitColl.deleteMany({}, function(err, result) {
+	    assert.equal(err, null);
+	    });
+
+	  logColl.deleteMany({}, function(err, result) {
+	    assert.equal(err, null);
+	    });    
+	}
+	removeDocuments(db);
+
+
+
+
+	
+	var insertUnit = function(unit, unitIndex, db, callback){
+							unitColl.insertOne(unit, function(err, result){
+								assert.equal(null, err);
+								assert.equal(1, result.ops.length);
+								callback(result.ops[0]._id, unitIndex);
+							});
+					}//end function insertUnit
+
+
+
+
+	var insertLog = function(log, db, callback){
+				logColl.insertOne(log, function(error, result){
+					assert.equal(null, error);
+					callback(result);
+				});
+	}
+
+	var insertLogs = function(){
+			var purpose = ["Business", "WorkHere", "JobInterview", "Casual"];
+
+			for(var j=0; j<551; j++){
+				var log = {
+					'unit' : {
+								'$ref' : 'Unit',
+								'$id' : units[genRandom(0, units.length-1)].objectIDinDb
+							},
+					'purpose' : purpose[genRandom(0, purpose.length)]
+				}
+				console.log(">" +log.unit['$id']);
+				insertLog(log, db, function(result){//console.log("inserted a log " + result.ops[0]['purpose']);})
+			}
+}
+
+	//Insert Units
+	for (var i = units.length - 1; i >= 0; i--) {
+		//console.log(units[i].objectIDinDb);
+		insertUnit(units[i], i, db, function(objID, unitIndex){
+										units[unitIndex].objectIDinDb = objID;
+										if(unitIndex==0) {
+											insertLogs();
+											db.close();
+											console.log("conn closed");
+										}
+										
+		});
+	}//end looping over units
+
+	
+	
+});//end Mongoclient.connect    
+
+
+function generateLogs(){
+	MongoClient.connect(url, function(err, db){
+		if(err!=null){
+			console.error(err);
+			return;
+		}
+
+	console.log("Again");
+	var logColl = db.collection('VisitorLog');
+//Insert Visitor logs
+	// var insertLog = function(log, db, callback){
+	// 			logColl.insertOne(log, function(error, result){
+	// 				assert.equal(null, error);
+	// 				callback(result);
+	// 			});
+	// }
+
+	// var purpose = ["Business", "WorkHere", "JobInterview", "Casual"];
+
+	// for(var j=0; j<551; j++){
+	// 	var log = {
+	// 		'unit' : {
+	// 					'$ref' : 'Unit',
+	// 					'$id' : units[genRandom(0, units.length-1)].objectIDinDb
+	// 				},
+	// 		'purpose' : purpose[genRandom(0, purpose.length)]
+	// 	}
+	// 	console.log(">" +log.unit['$id']);
+	// 	insertLog(log, db, function(result){console.log("inserted a log " + result);})
+	// }
+
+	
+});
+}
