@@ -148,7 +148,8 @@ MongoClient.connect(url, function(err, db){
 					'purpose' : purpose[genRandom(0, purpose.length)]
 				}
 				console.log(">" +log.unit['$id']);
-				insertLog(log, db, function(result){//console.log("inserted a log " + result.ops[0]['purpose']);})
+				insertLog(log, db, function(result){//console.log("inserted a log " + result.ops[0]['purpose']);
+			})
 			}
 }
 

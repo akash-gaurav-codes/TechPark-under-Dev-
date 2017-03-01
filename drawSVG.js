@@ -1,4 +1,4 @@
-var screenHeight = 500;
+	var screenHeight = 500;
 	var screenWidth  = 800;
 
 	var towerPadding = 20;
