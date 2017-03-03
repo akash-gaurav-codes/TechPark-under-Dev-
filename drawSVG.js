@@ -4,19 +4,18 @@
 	var towerPadding = 20;
 	var unitPadding  = 5;
 
-	//Todo : these are all dummy value. Fetch them from database.
-	var numOfTowers = 4;
-	var numOfUnitsPerFloor = 10;
-
+	
 
 	var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
 
 	var svgNS = svg.namespaceURI;
 
+	
+
 	var colorTower      = "#000000";
-	var colorUnitVacant = "#ffffff";
-	var colorUnitOwned  = "#fbff58	";
-	var colorUnitQueryResult  = "#fbff00";
+	var colorUnitVacant = "#212121";
+	var colorUnitOwned  = "#00E676";
+	var colorUnitQueryResult  = "#FFFF00";
 
 
 
@@ -54,9 +53,9 @@
 	for (var i = units.length - 1; i >=0; i--) {
 		//for (var i = units.length - 1; i >=units.length - 10; i--) {
 		
-		var unitNum  = Number(units[i]['name'].split('in')[0]);
-		var floorNum = Number(units[i]['name'].split('in')[1]);
-		var towerNum = Number(units[i]['name'].split('in')[2]);
+		var unitNum  = Number(units[i]['number'].split('in')[0]);
+		var floorNum = Number(units[i]['number'].split('in')[1]);
+		var towerNum = Number(units[i]['number'].split('in')[2]);
 		
 			//console.info("name:" + units[i]['name'] + "\t" + unitNum + "\t" + floorNum + "\t" + towerNum)
 
@@ -80,6 +79,39 @@
 	    rect.setAttribute('width',unitWidth);
 	    rect.setAttribute('height',unitHeight);
 	    rect.setAttribute('fill',fill);
+	    rect.setAttribute('id',units[i]['number']);
 	    svg.appendChild(rect);
 	}
 	    document.getElementById('asvg').appendChild(svg);
+
+
+
+
+
+
+var highlightedUnits = [units[0], units[1]];
+function highlightUnits(unitsArray){
+	
+	//loop through the highlighted units and remove their highlight
+	var max = highlightedUnits.length;
+	for (var p=0; p<max; p++){
+		var unit = highlightedUnits.pop();
+		var id = unit['number'];
+		var fillColor = (unit.owner.name=='vacant') ? colorUnitVacant : colorUnitOwned;
+	    $('#' + id).css({fill:fillColor});	
+		}
+
+	//loop through the new to-be-highlighted-units array containing unit numbers
+	//for each element, locate that unit in the svg using its id
+	//highlight it
+	//add it to highlightedUnits
+	var max = unitsArray.length;
+	for (var p=0; p<max; p++){
+		var unit = unitsArray.pop();
+		var id = unit['number'];
+		$('#' + id).css({fill:colorUnitQueryResult});	
+		console.log(id + colorUnitQueryResult);
+		highlightedUnits.push(unit);
+		}
+}
+highlightUnits([units[5],units[16],units[27],units[38],units[49]]);
